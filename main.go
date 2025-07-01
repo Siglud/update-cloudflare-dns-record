@@ -8,14 +8,15 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"slices"
 )
 
 type Config struct {
-	InterfaceName string `json:"interfaceName"`
-	BearerToken   string `json:"bearerToken"`
-	DomainName    string `json:"domainName"`
-	DnsRecordId   string `json:"dnsRecordId"`
-	ZoneId        string `json:"zoneId"`
+	InterfaceName []string `json:"interfaceName"`
+	BearerToken   string   `json:"bearerToken"`
+	DomainName    string   `json:"domainName"`
+	DnsRecordId   string   `json:"dnsRecordId"`
+	ZoneId        string   `json:"zoneId"`
 }
 
 type RequestBody struct {
@@ -41,13 +42,13 @@ func getConfig(location string) (*Config, error) {
 	return &config, nil
 }
 
-func getLocalIpv6(interfaceName string) (string, error) {
+func getLocalIpv6(interfaceName []string) (string, error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return "", err
 	}
 	for _, i := range interfaces {
-		if i.Name == interfaceName {
+		if slices.Contains(interfaceName, i.Name) {
 			addrs, err := i.Addrs()
 			if err != nil {
 				return "", err
@@ -62,6 +63,7 @@ func getLocalIpv6(interfaceName string) (string, error) {
 				}
 
 				if ip.To4() == nil && !ip.IsPrivate() {
+					fmt.Println("Found IPv6 address in ", i.Name)
 					return ip.String(), nil
 				}
 			}
