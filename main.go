@@ -62,14 +62,15 @@ func getLocalIpv6(interfaceName []string) (string, error) {
 					ip = v.IP
 				}
 
-				if ip.To4() == nil && !ip.IsPrivate() {
-					fmt.Println("Found IPv6 address in ", i.Name)
+				// Prefer only global, non-private IPv6 addresses.
+				if ip != nil && ip.To4() == nil && ip.IsGlobalUnicast() && !ip.IsPrivate() {
+					fmt.Println("Found global IPv6 address in ", i.Name)
 					return ip.String(), nil
 				}
 			}
 		}
 	}
-	return "", fmt.Errorf("interface %s not found", interfaceName)
+	return "", fmt.Errorf("no global IPv6 address found on interfaces: %v", interfaceName)
 }
 
 func updateCloudFlareRecord(config *Config, content string) error {

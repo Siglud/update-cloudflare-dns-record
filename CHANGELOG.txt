@@ -1,0 +1,2 @@
+# 0.0.1
+* Filter private and non-global ip address
